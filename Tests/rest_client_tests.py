@@ -14,7 +14,7 @@ if __name__ == '__main__':
     '''
     print(client.generate(
         model=model_name,
-        prompt="Explain TCP handshake briefly"
+        prompt="is it dangerous to eat raw (not boiled) chicken eggs?"
     ))
     '''
 
@@ -28,9 +28,7 @@ if __name__ == '__main__':
     print(res)
     '''
 
-    # '''
     res = client.ps()
     print(res)
-    # '''
 
     client.close()

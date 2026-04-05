@@ -1,7 +1,25 @@
+
 import requests
 import json
+from enum import Enum
 from requests import Response, Session
 from typing import Iterator, Optional, Dict, Any
+
+
+class HttpMethod(str, Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+    PATCH = "PATCH"
+    HEAD = "HEAD"
+    OPTIONS = "OPTIONS"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
 
 
 class OllamaRestClient:
@@ -15,7 +33,7 @@ class OllamaRestClient:
         self.session: Session = requests.Session()
 
     def _request(self,
-                 method: str,
+                 method: HttpMethod,
                  path: str,
                  *,
                  json_data: Optional[Dict[str, Any]] = None,
@@ -67,7 +85,7 @@ class OllamaRestClient:
             options=options,
             keep_alive=keep_alive,
         )
-        response: Response = self._request("POST", "/generate", json_data=payload)
+        response: Response = self._request(HttpMethod.POST, "/generate", json_data=payload)
         data = response.json()
         return data.get("response", "")
 
@@ -86,7 +104,7 @@ class OllamaRestClient:
             options=options,
             keep_alive=keep_alive,
         )
-        with self._request(method="POST",
+        with self._request(method=HttpMethod.POST,
                            path="/generate",
                            json_data=payload,
                            stream=True) as response:
@@ -103,32 +121,32 @@ class OllamaRestClient:
                     break
 
     def version(self) -> Dict[str, Any]:
-        response: Response = self._request(method="GET", path="/version")
+        response: Response = self._request(method=HttpMethod.GET, path="/version")
         return response.json()
 
     def list_models(self) -> Dict[str, Any]:
-        response: Response = self._request(method="GET", path="/tags")
+        response: Response = self._request(method=HttpMethod.GET, path="/tags")
         return response.json()
 
     def show(self, model: str) -> Dict[str, Any]:
-        response: Response = self._request(method="POST",
+        response: Response = self._request(method=HttpMethod.POST,
                                            path="/show",
                                            json_data={"name": model},
                                            timeout=300)
         return response.json()
 
     def ps(self) -> Dict[str, Any]:
-        response: Response = self._request(method="GET", path="/ps")
+        response: Response = self._request(method=HttpMethod.GET, path="/ps")
         return response.json()
 
     def pull_model(self, model: str) -> None:
-        self._request(method="POST",
+        self._request(method=HttpMethod.POST,
                       path="/pull",
                       json_data={"name": model},
                       timeout=300)
 
     def delete_model(self, model: str) -> None:
-        self._request(method="DELETE",
+        self._request(method=HttpMethod.DELETE,
                       path="/delete",
                       json_data={"name": model})
 
