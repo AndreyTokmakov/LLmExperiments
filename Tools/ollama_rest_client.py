@@ -4,7 +4,7 @@ from requests import Response, Session
 from typing import Iterator, Optional, Dict, Any
 
 
-class OllamaClient:
+class OllamaRestClient:
 
     def __init__(self,
                  base_url: str = "http://localhost:11434",
@@ -102,8 +102,23 @@ class OllamaClient:
                 if chunk.get("done"):
                     break
 
+    def version(self) -> Dict[str, Any]:
+        response: Response = self._request(method="GET", path="/version")
+        return response.json()
+
     def list_models(self) -> Dict[str, Any]:
         response: Response = self._request(method="GET", path="/tags")
+        return response.json()
+
+    def show(self, model: str) -> Dict[str, Any]:
+        response: Response = self._request(method="POST",
+                                           path="/show",
+                                           json_data={"name": model},
+                                           timeout=300)
+        return response.json()
+
+    def ps(self) -> Dict[str, Any]:
+        response: Response = self._request(method="GET", path="/ps")
         return response.json()
 
     def pull_model(self, model: str) -> None:
@@ -124,18 +139,3 @@ class OllamaClient:
 
     def close(self) -> None:
         self.session.close()
-
-
-if __name__ == '__main__':
-    model_deepseek_coder: str = 'deepseek-coder:1.3b'
-    client: OllamaClient = OllamaClient(base_url="http://localhost:11434")
-
-    r = client.list_models()
-    print(r)
-
-    print(client.generate(
-        model="deepseek-r1:1.5b",
-        prompt="Explain TCP handshake briefly"
-    ))
-
-    client.close()
